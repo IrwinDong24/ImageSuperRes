@@ -102,6 +102,8 @@ if __name__ == "__main__":
                 # validation
                 if current_step % opt['train']['val_freq'] == 0:
                     avg_psnr = 0.0
+                    avg_pl = 0.0
+                    px_size = 0.0
                     idx = 0
                     result_path = '{}/{}'.format(opt['path']
                                                  ['results'], current_epoch)
@@ -118,6 +120,11 @@ if __name__ == "__main__":
                         hr_img = Metrics.tensor2img(visuals['HR'])  # uint8
                         lr_img = Metrics.tensor2img(visuals['LR'])  # uint8
                         fake_img = Metrics.tensor2img(visuals['INF'])  # uint8
+                        val_input = {'SR': visuals['SR'].unsqueeze(0).cuda(),
+                                     'HR': visuals['HR'].cuda()}
+                        loss = diffusion.netG.p_losses(val_input)
+                        avg_pl += loss
+                        px_size = sr_img.size
 
                         # generation
                         Metrics.save_img(
@@ -143,13 +150,15 @@ if __name__ == "__main__":
                             )
 
                     avg_psnr = avg_psnr / idx
+                    avg_pl = avg_pl / idx
+                    l_p = avg_pl / px_size
                     diffusion.set_new_noise_schedule(
                         opt['model']['beta_schedule']['train'], schedule_phase='train')
                     # log
                     logger.info('# Validation # PSNR: {:.4e}'.format(avg_psnr))
                     logger_val = logging.getLogger('val')  # validation logger
-                    logger_val.info('<epoch:{:3d}, iter:{:8,d}> psnr: {:.4e}'.format(
-                        current_epoch, current_step, avg_psnr))
+                    logger_val.info('<epoch:{:3d}, iter:{:8,d}> l_p: {:.4e} psnr: {:.4e}'.format(
+                        current_epoch, current_step, l_p, avg_psnr))
                     # tensorboard logger
                     tb_logger.add_scalar('psnr', avg_psnr, current_step)
 
@@ -184,6 +193,7 @@ if __name__ == "__main__":
             diffusion.feed_data(val_data)
             diffusion.test(continous=True)
             visuals = diffusion.get_current_visuals()
+            l_p = diffusion.netG.p_loss(visuals)
 
             hr_img = Metrics.tensor2img(visuals['HR'])  # uint8
             lr_img = Metrics.tensor2img(visuals['LR'])  # uint8
