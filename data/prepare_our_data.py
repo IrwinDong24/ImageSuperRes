@@ -10,7 +10,7 @@ def to_rgb_image(array):
     return rgb
 
 # 载入NetCDF文件
-file_path = './wind/ws_100m_2018_01_10days.nc'
+file_path = './wind_data/ws_100m_2018_06.nc'
 data = xr.open_dataset(file_path)
 cmap = plt.get_cmap('viridis')
 for i in range(240):
@@ -22,7 +22,7 @@ for i in range(240):
 
     for j, img in enumerate(imgsx512):
         rgb_image = to_rgb_image(img)
-        plt.imsave(f'./wind/512/hour-{i}-slide-{j}.png', rgb_image)
+        plt.imsave(f'./wind_data/wind_train/512/06-hour-{i}-slide-{j}.png', rgb_image)
 
     imgsx128 = []
     for j in range(7):
@@ -31,5 +31,5 @@ for i in range(240):
 
     for j, img in enumerate(imgsx128):
         rgb_image = to_rgb_image(img)
-        plt.imsave(f'./wind/128/hour-{i}-slide-{j}.png', rgb_image)
+        plt.imsave(f'./wind_data/wind_train/128/06-hour-{i}-slide-{j}.png', rgb_image)
 
