@@ -1,3 +1,6 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["WORLD_SIZE"] = "1"
 import torch
 import data as Data
 import model as Model
@@ -7,7 +10,6 @@ import core.logger as Logger
 import core.metrics as Metrics
 from core.wandb_logger import WandbLogger
 from tensorboardX import SummaryWriter
-import os
 import numpy as np
 
 if __name__ == "__main__":
